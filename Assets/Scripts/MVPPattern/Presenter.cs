@@ -10,5 +10,10 @@ public class Presenter : MonoBehaviour
     [SerializeField, Tooltip("View")]
     View _view = default;
 
-
+    private void Awake()
+    {
+        _model.InitializeUI += _view.Initialize;
+        _model.HpUIUpdate += _view.HpChangeValue;
+        _model.MpUIUpdate += _view.MpChangeValue;
+    }
 }
