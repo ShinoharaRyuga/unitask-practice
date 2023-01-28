@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Presenter : MonoBehaviour
@@ -12,8 +10,9 @@ public class Presenter : MonoBehaviour
 
     private void Awake()
     {
-        _model.InitializeUI += _view.Initialize;
-        _model.HpUIUpdate += _view.HpChangeValue;
-        _model.MpUIUpdate += _view.MpChangeValue;
+        _model.OnInitializeUI += _view.Initialize;
+        _model.OnHpUIUpdate += _view.HpChangeValue;
+        _model.OnMpUIUpdate += _view.MpChangeValue;
+        _model.OnCommandResultTextUpdate += _view.ShowCommandText;
     }
 }

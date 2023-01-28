@@ -15,33 +15,44 @@ public class Model : MonoBehaviour
     /// <summary>現在のMp </summary>
     float _currentMp = 0;
 
+    #region Action
     /// <summary>UIを初期化する処理 </summary>
-    event Action<float, float> _initializeUI = default;
+    event Action<float, float> _onInitializeUI = default;
     /// <summary>HPUIを更新する処理 </summary>
-    event Action<float, float, float> _hpUIUpdate = default;
+    event Action<float, float, float> _onHpUIUpdate = default;
     /// <summary>MPUIを更新する処理 </summary>
-    event Action<float, float, float> _mpUIUpdate = default;
+    event Action<float, float, float> _onMpUIUpdate = default;
+    /// <summary>コマンドの実行結果を表示するテキストを更新する処理 </summary>
+    event Action<Command> _onCommandResultTextUpdate = default;
 
     /// <summary>UIを初期化する処理 </summary>
-    public event Action<float, float> InitializeUI
+    public event Action<float, float> OnInitializeUI
     {
-        add { _initializeUI += value; }
-        remove { _initializeUI -= value; }
+        add { _onInitializeUI += value; }
+        remove { _onInitializeUI -= value; }
     }
 
     /// <summary>HPUIを更新する処理 </summary>
-    public event Action<float, float, float> HpUIUpdate
+    public event Action<float, float, float> OnHpUIUpdate
     {
-        add { _hpUIUpdate += value; }
-        remove { _hpUIUpdate -= value; }
+        add { _onHpUIUpdate += value; }
+        remove { _onHpUIUpdate -= value; }
     }
 
     /// <summary>MPUIを更新する処理 </summary>
-    public event Action<float, float, float> MpUIUpdate
+    public event Action<float, float, float> OnMpUIUpdate
     {
-        add { _mpUIUpdate += value; }
-        remove { _mpUIUpdate -= value; }
+        add { _onMpUIUpdate += value; }
+        remove { _onMpUIUpdate -= value; }
     }
+
+    /// <summary>コマンドの実行結果を表示するテキストを更新する処理 </summary>
+    public event Action<Command> OnCommandResultTextUpdate
+    {
+        add { _onCommandResultTextUpdate += value; }
+        remove { _onCommandResultTextUpdate -= value; }
+    }
+    #endregion
 
     public void Start()
     {
@@ -53,7 +64,7 @@ public class Model : MonoBehaviour
     {
         _currentHp = _maxHp;
         _currentMp = _maxMp;
-        _initializeUI?.Invoke(_currentHp, _currentMp);
+        _onInitializeUI?.Invoke(_currentHp, _currentMp);
     }
 
     /// <summary>ダメージを受ける </summary>
@@ -61,9 +72,10 @@ public class Model : MonoBehaviour
     public void GetDamage(float damageValue)
     {
         var nextHp = Mathf.Max(_currentHp - damageValue, 0);
-        _hpUIUpdate?.Invoke(nextHp / _maxHp, _currentHp, nextHp);
+        _onHpUIUpdate?.Invoke(nextHp / _maxHp, _currentHp, nextHp);
+        _onCommandResultTextUpdate?.Invoke(Command.Damage);
         _currentHp = nextHp;
- 
+
         if (_currentHp <= 0)
         {
             Debug.Log("死");
@@ -79,8 +91,9 @@ public class Model : MonoBehaviour
         var nextHp = Mathf.Min(_currentHp + healValue, _maxHp);
         var nextMp = Mathf.Max(_currentMp - _useMp, 0);
 
-        _hpUIUpdate?.Invoke(nextHp / _maxHp, _currentHp, nextHp);
-        _mpUIUpdate?.Invoke(nextMp / _maxMp, _currentMp, nextMp);
+        _onHpUIUpdate?.Invoke(nextHp / _maxHp, _currentHp, nextHp);
+        _onMpUIUpdate?.Invoke(nextMp / _maxMp, _currentMp, nextMp);
+        _onCommandResultTextUpdate?.Invoke(Command.Heal);
 
         _currentHp = nextHp;
         _currentMp = nextMp;
@@ -90,11 +103,19 @@ public class Model : MonoBehaviour
     /// <param name="recoverValue">回復量</param>
     public void RecoverMp(float recoverValue)
     {
-        if(_maxMp <= _currentMp) { return; }
+        if (_maxMp <= _currentMp) { return; }
 
         var nextMp = Mathf.Min(_currentMp + recoverValue, _maxMp);
-        _mpUIUpdate?.Invoke(nextMp / _maxMp, _currentMp, nextMp);
+        _onMpUIUpdate?.Invoke(nextMp / _maxMp, _currentMp, nextMp);
+        _onCommandResultTextUpdate?.Invoke(Command.RecoverMp);
 
         _currentMp = nextMp;
     }
+}
+
+public enum Command
+{
+    Damage,
+    Heal,
+    RecoverMp,
 }

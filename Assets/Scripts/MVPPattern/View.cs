@@ -4,12 +4,18 @@ using DG.Tweening;
 
 public class View : MonoBehaviour
 {
+    readonly Vector2 COMMAND_TEXT_DEFAULT_POSITION = new Vector2(-250f, -380f);
+
+    readonly Vector2 COMMAND_TEXT_ANIMATION_POSITION = new Vector2(-250f, -300f);
+
     [SerializeField, Tooltip("アニメーションにかかる時間")]
     float _interval = default;
     [SerializeField, Tooltip("HPゲージ")]
     Slider _hpGage = default;
     [SerializeField, Tooltip("MPゲージ")]
     Slider _mpGage = default;
+    [SerializeField, Tooltip("コマンドを表示するテキスト")]
+    Text _commandText = default;
 
     /// <summary>現在のHpを表示するテキスト</summary>
     Text _currentHpValueText => _hpGage.transform.GetChild(0).GetComponent<Text>();
@@ -80,5 +86,30 @@ public class View : MonoBehaviour
         maxMpText.text = maxMp.ToString();
         _currentHpValueText.text = maxHp.ToString();
         _currentMpValueText.text = maxMp.ToString();
+    }
+
+    /// <summary>コマンドの実行結果をテキストに表示する </summary>
+    public void ShowCommandText(Command command)
+    {
+        _commandText.rectTransform.localPosition = COMMAND_TEXT_DEFAULT_POSITION;
+        _commandText.color = new Color(_commandText.color.r, _commandText.color.g, _commandText.color.b, 1f);
+
+        var sequence = DOTween.Sequence();
+
+        switch (command)
+        {
+            case Command.Damage:
+                _commandText.text = "ダメージうけた！";
+                break;
+            case Command.Heal:
+                _commandText.text = "HPが回復した!";
+                break;
+            case Command.RecoverMp:
+                _commandText.text = "MPが回復した!";
+                break;
+        }
+
+        sequence.Append(_commandText.rectTransform.DOAnchorPos(COMMAND_TEXT_ANIMATION_POSITION, _interval))
+            .Append(_commandText.DOFade(0f, _interval));
     }
 }
